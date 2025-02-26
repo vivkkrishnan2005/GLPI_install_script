@@ -46,7 +46,7 @@ This script was tested on this distributions:
 ## How to use
 GLPI_install_script  is installed by running one of the following commands in your terminal. You can install this via the command-line with either curl or wget.
 
-    wget https://raw.githubusercontent.com/jr0w3/GLPI_install_script/main/glpi-install.sh && bash glpi-install.sh
+    wget https://raw.githubusercontent.com/vivkkrishnan2005/GLPI_install_script/main/glpi-install.sh && bash glpi-install.sh
 or with curl
 
-    curl -O https://raw.githubusercontent.com/jr0w3/GLPI_install_script/main/glpi-install.sh && bash glpi-install.sh
+    curl -O https://raw.githubusercontent.com/vivkkrishnan2005/GLPI_install_script/main/glpi-install.sh && bash glpi-install.sh
