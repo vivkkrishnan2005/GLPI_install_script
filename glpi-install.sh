@@ -151,8 +151,6 @@ SQLGLPIPWD=$(openssl rand -base64 48 | cut -c1-12 )
 systemctl start mariadb
 sleep 1
 
-# Set the root password
-mysql -e "UPDATE mysql.user SET Password = PASSWORD('$SLQROOTPWD') WHERE User = 'root'"
 # Remove anonymous user accounts
 mysql -e "DELETE FROM mysql.user WHERE User = ''"
 # Disable remote root login
@@ -171,12 +169,13 @@ mysql -e "GRANT ALL PRIVILEGES ON glpi.* TO 'glpi_user'@'localhost'"
 mysql -e "FLUSH PRIVILEGES"
 
 # Initialize time zones datas
-mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p'$SLQROOTPWD' mysql
+mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql mysql
 #Ask tz
 dpkg-reconfigure tzdata
 systemctl restart mariadb
 sleep 1
 mysql -e "GRANT SELECT ON mysql.time_zone_name TO 'glpi_user'@'localhost'"
+mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$SLQROOTPWD'"
 }
 
 function install_glpi()
@@ -186,26 +185,26 @@ info "Downloading and installing the latest version of GLPI..."
 DOWNLOADLINK=$(curl -s https://api.github.com/repos/glpi-project/glpi/releases/latest | jq -r '.assets[0].browser_download_url')
 wget -O /tmp/glpi-latest.tgz $DOWNLOADLINK
 tar xzf /tmp/glpi-latest.tgz -C /var/www/html/
+touch /var/www/html/glpi/files/_log/php-errors.log
 
 # Add permissions
 chown -R www-data:www-data /var/www/html/glpi
 chmod -R 775 /var/www/html/glpi
-
 # Setup vhost
 cat > /etc/apache2/sites-available/000-default.conf << EOF
 <VirtualHost *:80>
-       DocumentRoot /var/www/html/glpi/public  
+       DocumentRoot /var/www/html/glpi/public
        <Directory /var/www/html/glpi/public>
                 Require all granted
                 RewriteEngine On
                 RewriteCond %{REQUEST_FILENAME} !-f
                 RewriteRule ^(.*)$ index.php [QSA,L]
         </Directory>
-        
+
         LogLevel warn
         ErrorLog \${APACHE_LOG_DIR}/error-glpi.log
         CustomLog \${APACHE_LOG_DIR}/access-glpi.log combined
-        
+
 </VirtualHost>
 EOF
 
